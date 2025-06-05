@@ -1,10 +1,10 @@
-import NotificationsPage from '@/components/Notifications'
+import CustomerProfile from '@/components/customer-profile-page'
 import React from 'react'
 
 const page: React.FC = () => {
   return (
     <div>
-      <NotificationsPage  />
+        <CustomerProfile/>
     </div>
   )
 }
