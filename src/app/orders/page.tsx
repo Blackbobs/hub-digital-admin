@@ -1,13 +1,12 @@
-import OrdersDashboard from '@/components/orders.page'
-import React from 'react'
+import OrdersDashboard from "@/components/orders-page";
+import React from "react";
 
 const page: React.FC = () => {
   return (
     <div>
-        <OrdersDashboard />
-       
+      <OrdersDashboard />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;

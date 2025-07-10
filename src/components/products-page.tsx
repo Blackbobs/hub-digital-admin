@@ -1,5 +1,6 @@
-"use client";
-import React, { useState, useMemo } from "react";
+'use client';
+
+import React, { useMemo, useState } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -7,283 +8,278 @@ import {
   getSortedRowModel,
   flexRender,
   createColumnHelper,
-} from "@tanstack/react-table";
-import { Bell, Search, ChevronDown, Edit } from "lucide-react";
-import Modal from "@/lib/Modal";
-import AddProductForm from "./add-product-form";
-
-const productData = [
-  {
-    id: 1,
-    name: "Eco-Friendly Bamboo Toothbrushes",
-    type: "Physical",
-    price: 5.99,
-    stock: 150,
-  },
-  {
-    id: 2,
-    name: "Digital Art Prints - Abstract Designs",
-    type: "Digital",
-    price: 12.5,
-    stock: "Unlimited",
-  },
-  {
-    id: 3,
-    name: "Organic Cotton T-shirts - Various Sizes",
-    type: "Physical",
-    price: 19.99,
-    stock: 80,
-  },
-  {
-    id: 4,
-    name: "E-book: 'Sustainable Living Guide'",
-    type: "Digital",
-    price: 9.99,
-    stock: "Unlimited",
-  },
-  {
-    id: 5,
-    name: "Handmade Soap Bars - Natural Scents",
-    type: "Physical",
-    price: 7.5,
-    stock: 120,
-  },
-  {
-    id: 6,
-    name: "Online Course: 'Mindfulness Meditation'",
-    type: "Digital",
-    price: 49.99,
-    stock: "Unlimited",
-  },
-  {
-    id: 7,
-    name: "Recycled Paper Notebooks",
-    type: "Physical",
-    price: 3.5,
-    stock: 200,
-  },
-  {
-    id: 8,
-    name: "Podcast Series: 'Entrepreneurship Insights'",
-    type: "Digital",
-    price: 29.99,
-    stock: "Unlimited",
-  },
-  {
-    id: 9,
-    name: "Reusable Water Bottles - Stainless Steel",
-    type: "Physical",
-    price: 14.99,
-    stock: 60,
-  },
-  {
-    id: 10,
-    name: "Digital Photography Presets",
-    type: "Digital",
-    price: 15.0,
-    stock: "Unlimited",
-  },
-];
-
-type Product = {
-  id: number;
-  name: string;
-  type: string;
-  price: number;
-  stock: number | string;
-};
+  ColumnDef,
+  SortingState,
+} from '@tanstack/react-table';
+import { Search, ChevronDown, Edit } from 'lucide-react';
+import Modal from '@/lib/Modal';
+import AddProductForm from './add-product-form';
+import { useProducts } from '@/services/products.service';
+import { useRouter } from 'next/navigation';
+import { Product, ProductType, StockFilter } from '@/interface/product';
 
 const columnHelper = createColumnHelper<Product>();
 
-export default function DropshipProducts() {
-  const [data, setData] = useState(productData);
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
-  const [stockFilter, setStockFilter] = useState("");
+export default function Products() {
+  const router = useRouter();
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState<ProductType | ''>('');
+  const [stockFilter, setStockFilter] = useState<StockFilter>('');
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [open, setOpen] = useState(false);
 
-  const columns = useMemo(
+  const { data = [], isLoading, refetch } = useProducts();
+
+  const filteredData = useMemo(() => {
+    return data.filter((item: Product) => {
+      // Search filter
+      const matchesSearch = item.title.toLowerCase().includes(globalFilter.toLowerCase()) || 
+                          item.description?.toLowerCase().includes(globalFilter.toLowerCase());
+
+      // Type filter
+      const matchesType = typeFilter === '' || item.type === typeFilter;
+
+      // Stock filter
+      const matchesStock =
+        stockFilter === '' ||
+        (stockFilter === 'In Stock' && item.stock && item.stock > 0) ||
+        (stockFilter === 'Low Stock' && item.stock && item.stock < 50) ||
+        (stockFilter === 'Unlimited' && item.stock === undefined);
+
+      return matchesSearch && matchesType && matchesStock;
+    });
+  }, [data, globalFilter, typeFilter, stockFilter]);
+
+  const columns = useMemo<ColumnDef<Product>[]>(
     () => [
-      columnHelper.accessor("name", {
-        header: "Product Name",
+      {
+        accessorKey: 'title',
+        header: 'Product Name',
         cell: (info) => (
-          <div className="font-normal text-gray-900">{info.getValue()}</div>
+          <div className="font-normal text-gray-900">
+            {info.getValue<string>()}
+            {info.row.original.description && (
+              <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+                {info.row.original.description}
+              </p>
+            )}
+          </div>
         ),
-      }),
-      columnHelper.accessor("type", {
-        header: "Type",
-        cell: (info) => <div className="text-gray-600">{info.getValue()}</div>,
-      }),
-      columnHelper.accessor("price", {
-        header: "Price",
+      },
+      {
+        accessorKey: 'type',
+        header: 'Type',
         cell: (info) => (
-          <div className="text-gray-600">${info.getValue().toFixed(2)}</div>
+          <span className="capitalize text-gray-600">{info.getValue<string>()}</span>
         ),
-      }),
-      columnHelper.accessor("stock", {
-        header: "Stock",
-        cell: (info) => <div className="text-gray-600">{info.getValue()}</div>,
-      }),
-      columnHelper.display({
-        id: "actions",
-        header: "Actions",
-        cell: () => (
-          <button className="text-gray-600 hover:text-[#663399] cursor-pointer font-bold text-sm tracking-wide transition-colors">
+        filterFn: (row, _, value) => {
+          if (!value) return true;
+          return row.original.type === value;
+        },
+      },
+      {
+        accessorKey: 'price',
+        header: 'Price',
+        cell: (info) => (
+          <div className="text-gray-600">${info.getValue<number>().toFixed(2)}</div>
+        ),
+      },
+      {
+        accessorKey: 'stock',
+        header: 'Stock',
+        cell: (info) => {
+          const stock = info.getValue<number | undefined>();
+          let display = stock?.toString() ?? 'Unlimited';
+          let className = 'text-gray-600';
+          
+          if (stock !== undefined) {
+            if (stock === 0) {
+              display = 'Out of Stock';
+              className = 'text-red-500';
+            } else if (stock < 50) {
+              display = `${stock} (Low)`;
+              className = 'text-yellow-500';
+            }
+          }
+          
+          return <div className={className}>{display}</div>;
+        },
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => (
+          <button 
+            onClick={() => router.push(`/products/edit/${row.original._id}`)}
+            className="text-gray-600 hover:text-[#663399] cursor-pointer font-bold text-sm tracking-wide transition-colors"
+          >
             <Edit className="w-4 h-4 inline mr-1" />
             Edit
           </button>
         ),
-      }),
+      },
     ],
-    []
+    [router]
   );
-
-  const filteredData = useMemo(() => {
-    return data.filter((item) => {
-      const matchesType = typeFilter === "" || item.type === typeFilter;
-      const matchesStock =
-        stockFilter === "" ||
-        (stockFilter === "In Stock" &&
-          typeof item.stock === "number" &&
-          item.stock > 0) ||
-        (stockFilter === "Unlimited" && item.stock === "Unlimited") ||
-        (stockFilter === "Low Stock" &&
-          typeof item.stock === "number" &&
-          item.stock < 50);
-
-      return matchesType && matchesStock;
-    });
-  }, [data, typeFilter, stockFilter]);
 
   const table = useReactTable({
     data: filteredData,
     columns,
+    state: {
+      globalFilter,
+      sorting,
+    },
+    onGlobalFilterChange: setGlobalFilter,
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    state: {
-      globalFilter,
-    },
-    onGlobalFilterChange: setGlobalFilter,
   });
+
+  const handleProductCreated = () => {
+    setOpen(false);
+    refetch();
+  };
 
   return (
     <div className="min-h-screen bg-white font-sans">
-      <div className="px-40 py-5">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-center p-4">
-            <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-            <button
-              onClick={() => setOpen(true)}
-              className="px-5 py-2 bg-gray-100 text-[#663399] text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"
-            >
-              Add Product
-            </button>
+      <div className="px-4 py-5 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Products</h1>
+            <div className="flex gap-3 w-full sm:w-auto">
+              <button
+                onClick={() => setOpen(true)}
+                className="px-4 py-2 bg-[#663399] text-white text-sm font-medium rounded-md hover:bg-[#663399d6] transition-colors whitespace-nowrap"
+              >
+                Add Product
+              </button>
+            </div>
           </div>
 
           <Modal isOpen={open} onClose={() => setOpen(false)}>
-            <h2 className="text-xl font-semibold mb-4">Add New Product</h2>
-            <AddProductForm />
+            <div className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Add New Product</h2>
+              <AddProductForm onSuccess={handleProductCreated} />
+            </div>
           </Modal>
 
-          {/* Search */}
-          <div className="px-4 py-3">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search className="w-6 h-6 text-gray-500" />
+          <div className="space-y-4 p-4">
+            <div className="relative max-w-md">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="w-5 h-5 text-gray-400" />
               </div>
               <input
                 type="text"
-                placeholder="Search products"
-                className="w-full h-12 pl-12 pr-4 bg-gray-100 border-0 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={globalFilter ?? ""}
+                placeholder="Search products..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#663399] focus:border-[#663399] outline-none"
+                value={globalFilter}
                 onChange={(e) => setGlobalFilter(e.target.value)}
               />
             </div>
+
+            <div className="flex flex-wrap gap-3">
+              <div className="relative min-w-[150px]">
+                <select
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value as ProductType | '')}
+                  className="w-full pl-3 pr-8 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-[#663399] focus:border-[#663399] outline-none appearance-none"
+                >
+                  <option value="">All Types</option>
+                  <option value="physical">Physical</option>
+                  <option value="digital">Digital</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+              </div>
+
+              <div className="relative min-w-[150px]">
+                <select
+                  value={stockFilter}
+                  onChange={(e) => setStockFilter(e.target.value as StockFilter)}
+                  className="w-full pl-3 pr-8 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-[#663399] focus:border-[#663399] outline-none appearance-none"
+                >
+                  <option value="">All Stock</option>
+                  <option value="In Stock">In Stock</option>
+                  <option value="Low Stock">Low Stock</option>
+                  <option value="Unlimited">Unlimited</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+              </div>
+            </div>
           </div>
 
-          {/* Filters */}
-          <div className="flex gap-3 p-3">
-            <div className="relative">
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="h-8 pl-4 pr-8 bg-gray-100 rounded-lg text-sm font-medium text-gray-900 border-0 focus:outline-none appearance-none cursor-pointer"
-              >
-                <option value="">All Types</option>
-                <option value="Physical">Physical</option>
-                <option value="Digital">Digital</option>
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-900 pointer-events-none" />
-            </div>
-
-            <div className="relative">
-              <select
-                value={stockFilter}
-                onChange={(e) => setStockFilter(e.target.value)}
-                className="h-8 pl-4 pr-8 bg-gray-100 rounded-lg text-sm font-medium text-gray-900 border-0 focus:outline-none appearance-none cursor-pointer"
-              >
-                <option value="">All Stock</option>
-                <option value="In Stock">In Stock</option>
-                <option value="Low Stock">Low Stock</option>
-                <option value="Unlimited">Unlimited</option>
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-900 pointer-events-none" />
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="p-4">
-            <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-              <table className="w-full">
-                <thead>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <tr
-                      key={headerGroup.id}
-                      className="bg-white border-b border-gray-200"
-                    >
-                      {headerGroup.headers.map((header) => (
-                        <th
-                          key={header.id}
-                          className="px-4 py-3 text-left text-sm font-medium text-gray-900 cursor-pointer hover:bg-gray-50"
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
+          <div className="overflow-x-auto p-4">
+            <div className="inline-block min-w-full align-middle">
+              <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <tr key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => (
+                          <th
+                            key={header.id}
+                            scope="col"
+                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            <div className="flex items-center">
+                              {flexRender(
                                 header.column.columnDef.header,
                                 header.getContext()
                               )}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                  {table.getRowModel().rows.map((row) => (
-                    <tr
-                      key={row.id}
-                      className="border-t border-gray-200 hover:bg-gray-50 transition-colors"
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-4 py-4 text-sm">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
+                              {{
+                                asc: ' 🔼',
+                                desc: ' 🔽',
+                              }[header.column.getIsSorted() as string] ?? null}
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={columns.length} className="px-4 py-6 text-center">
+                          <div className="flex justify-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#663399]"></div>
+                          </div>
                         </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </tr>
+                    ) : table.getRowModel().rows.length === 0 ? (
+                      <tr>
+                        <td colSpan={columns.length} className="px-4 py-6 text-center text-gray-500">
+                          No products found
+                        </td>
+                      </tr>
+                    ) : (
+                      table.getRowModel().rows.map((row) => (
+                        <tr
+                          key={row.id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <td key={cell.id} className="px-4 py-4 whitespace-nowrap">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
-          {/* Results Info */}
-          <div className="px-4 py-2 text-sm text-gray-600">
-            Showing {table.getRowModel().rows.length} of {data.length} products
-          </div>
+          {!isLoading && (
+            <div className="px-4 py-3 text-sm text-gray-600 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+              Showing {table.getRowModel().rows.length} of {data.length} products
+            </div>
+          )}
         </div>
       </div>
     </div>

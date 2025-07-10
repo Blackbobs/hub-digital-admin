@@ -11,137 +11,51 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import { Search, ChevronDown, User } from "lucide-react";
+import { Customer, useCustomers } from "@/services/customers.service";
 
-// Types
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  registrationDate: string;
-}
 
-// Sample data
-const sampleCustomers: Customer[] = [
-  {
-    id: "1",
-    name: "Sophia Carter",
-    email: "sophia.carter@email.com",
-    registrationDate: "2023-01-15",
-  },
-  {
-    id: "2",
-    name: "Liam Bennett",
-    email: "liam.bennett@email.com",
-    registrationDate: "2023-02-20",
-  },
-  {
-    id: "3",
-    name: "Olivia Hayes",
-    email: "olivia.hayes@email.com",
-    registrationDate: "2023-03-10",
-  },
-  {
-    id: "4",
-    name: "Noah Parker",
-    email: "noah.parker@email.com",
-    registrationDate: "2023-04-05",
-  },
-  {
-    id: "5",
-    name: "Ava Foster",
-    email: "ava.foster@email.com",
-    registrationDate: "2023-05-12",
-  },
-  {
-    id: "6",
-    name: "Ethan Brooks",
-    email: "ethan.brooks@email.com",
-    registrationDate: "2023-06-22",
-  },
-  {
-    id: "7",
-    name: "Isabella Reed",
-    email: "isabella.reed@email.com",
-    registrationDate: "2023-07-01",
-  },
-  {
-    id: "8",
-    name: "Mason Hughes",
-    email: "mason.hughes@email.com",
-    registrationDate: "2023-08-18",
-  },
-  {
-    id: "9",
-    name: "Mia Coleman",
-    email: "mia.coleman@email.com",
-    registrationDate: "2023-09-09",
-  },
-  {
-    id: "10",
-    name: "Lucas Ward",
-    email: "lucas.ward@email.com",
-    registrationDate: "2023-10-25",
-  },
-];
 
-const columnHelper = createColumnHelper<Customer>();
+
+
 
 export default function CustomersPage() {
+const { data: customers = [], isLoading } = useCustomers();
   const [globalFilter, setGlobalFilter] = useState("");
-  const [data] = useState(sampleCustomers);
 
-  // Define columns
-  const columns = useMemo<ColumnDef<Customer, any>[]>(
-    () => [
-      columnHelper.accessor("name", {
-        header: "Name",
-        cell: (info) => (
-          <div className="text-[#111418] text-sm font-normal leading-normal">
-            {info.getValue()}
-          </div>
-        ),
-      }),
-      columnHelper.accessor("email", {
-        header: "Email",
-        cell: (info) => (
-          <div className="text-[#60758a] text-sm font-normal leading-normal">
-            {info.getValue()}
-          </div>
-        ),
-      }),
-      columnHelper.accessor("registrationDate", {
-        header: "Registration Date",
-        cell: (info) => (
-          <div className="text-[#60758a] text-sm font-normal leading-normal">
-            {info.getValue()}
-          </div>
-        ),
-      }),
-      columnHelper.display({
-        id: "actions",
-        header: "",
-        cell: () => (
-          <button className="text-[#60758a] text-sm font-bold leading-normal tracking-[0.015em] hover:text-[#111418] transition-colors">
-            View Details
-          </button>
-        ),
-      }),
-    ],
-    []
-  );
+  const columnHelper = createColumnHelper<Customer>();
+
+  const columns = useMemo<ColumnDef<Customer, any>[]>(() => [
+    columnHelper.accessor("username", { header: "Name", cell: info => <div className="text-[#111418]">{info.getValue()}</div> }),
+    columnHelper.accessor("email", { header: "Email", cell: info => <div className="text-[#60758a]">{info.getValue()}</div> }),
+    columnHelper.accessor("createdAt", {
+      header: "Registration Date",
+      cell: info => <div className="text-[#60758a]">{new Date(info.getValue()).toLocaleDateString()}</div>
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: "",
+      cell: () => (
+        <button className="text-sm font-bold text-[#60758a] hover:text-[#111418] transition-colors">
+          View Details
+        </button>
+      ),
+    }),
+  ], []);
 
   const table = useReactTable({
-    data,
+    data: customers,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     globalFilterFn: "includesString",
-    state: {
-      globalFilter,
-    },
+    state: { globalFilter },
     onGlobalFilterChange: setGlobalFilter,
   });
+
+  if (isLoading) {
+    return <p className="p-10 text-center">Loading customers...</p>;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -247,7 +161,7 @@ export default function CustomersPage() {
 
           {/* Table Info */}
           <div className="px-4 py-2 text-sm text-[#60758a]">
-            Showing {table.getRowModel().rows.length} of {data.length} customers
+            Showing {table.getRowModel().rows.length} of {customers.length} customers
           </div>
         </div>
       </div>
