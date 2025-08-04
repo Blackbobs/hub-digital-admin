@@ -1,12 +1,16 @@
 import OrderDetailsPage from '@/components/order-details-page'
 import React from 'react'
 
-const page: React.FC = () => {
+interface PageProps {
+  params: { slug: string }
+}
+
+export default async function Page({ params }: PageProps) {
   return (
     <div>
-        <OrderDetailsPage/>
+      <OrderDetailsPage params={params} />
     </div>
   )
 }
 
-export default page
+

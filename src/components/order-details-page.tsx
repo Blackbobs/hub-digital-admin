@@ -8,9 +8,10 @@ import StatusBadge from './status-badge';
 import { useOrder, useUpdateOrderStatus } from '@/hooks/useOrder';
 
 
-const OrderDetailsPage = ({ params }: { params: { id: string } }) => {
+const OrderDetailsPage = ({ params }: { params: { slug: string } }) => {
   // const router = useRouter();
-  const { data: order, isLoading, isError } = useOrder(params.id);
+  const { slug } = params;
+  const { data: order, isLoading, isError } = useOrder(slug);
   const { mutate: updateStatus, isPending: isUpdating } = useUpdateOrderStatus();
   const [status, setStatus] = useState(order?.status || '');
 
@@ -19,7 +20,7 @@ const OrderDetailsPage = ({ params }: { params: { id: string } }) => {
   if (!order) return <div>Order not found</div>;
 
   const handleStatusUpdate = () => {
-    updateStatus({ id: params.id, status: status as OrderStatus });
+    updateStatus({ id: slug, status: status as OrderStatus });
   };
 
   return (
