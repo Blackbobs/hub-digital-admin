@@ -3,7 +3,7 @@ import { useAuthStore } from "@/store/useUserStore";
 import axios from "axios";
 
 export const axiosConfig = axios.create({
-  baseURL: "http://localhost:5050/api/v1",
+  baseURL: "http://192.168.113.86:5050/api/v1",
   withCredentials: true, 
 });
 

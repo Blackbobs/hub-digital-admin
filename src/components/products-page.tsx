@@ -105,19 +105,19 @@ export default function Products() {
           return <div className={className}>{display}</div>;
         },
       },
-      {
-        id: 'actions',
-        header: 'Actions',
-        cell: ({ row }) => (
-          <button 
-            onClick={() => router.push(`/products/edit/${row.original._id}`)}
-            className="text-gray-600 hover:text-[#663399] cursor-pointer font-bold text-sm tracking-wide transition-colors"
-          >
-            <Edit className="w-4 h-4 inline mr-1" />
-            Edit
-          </button>
-        ),
-      },
+      // {
+      //   id: 'actions',
+      //   header: 'Actions',
+      //   cell: ({ row }) => (
+      //     <button 
+      //       onClick={() => router.push(`/products/edit/${row.original._id}`)}
+      //       className="text-gray-600 hover:text-[#663399] cursor-pointer font-bold text-sm tracking-wide transition-colors"
+      //     >
+      //       <Edit className="w-4 h-4 inline mr-1" />
+      //       Edit
+      //     </button>
+      //   ),
+      // },
     ],
     [router]
   );
@@ -158,7 +158,7 @@ export default function Products() {
           </div>
 
           <Modal isOpen={open} onClose={() => setOpen(false)}>
-            <div className="p-6">
+            <div className="md:p-6">
               <h2 className="text-xl font-semibold mb-4">Add New Product</h2>
               <AddProductForm onSuccess={handleProductCreated} />
             </div>

@@ -13,34 +13,42 @@ import {
 import { Search, ChevronDown, User } from "lucide-react";
 import { Customer, useCustomers } from "@/services/customers.service";
 
-
-
-
-
-
 export default function CustomersPage() {
-const { data: customers = [], isLoading } = useCustomers();
+  const { data: customers = [], isLoading } = useCustomers();
   const [globalFilter, setGlobalFilter] = useState("");
 
   const columnHelper = createColumnHelper<Customer>();
 
-  const columns = useMemo<ColumnDef<Customer, any>[]>(() => [
-    columnHelper.accessor("username", { header: "Name", cell: info => <div className="text-[#111418]">{info.getValue()}</div> }),
-    columnHelper.accessor("email", { header: "Email", cell: info => <div className="text-[#60758a]">{info.getValue()}</div> }),
-    columnHelper.accessor("createdAt", {
-      header: "Registration Date",
-      cell: info => <div className="text-[#60758a]">{new Date(info.getValue()).toLocaleDateString()}</div>
-    }),
-    columnHelper.display({
-      id: "actions",
-      header: "",
-      cell: () => (
-        <button className="text-sm font-bold text-[#60758a] hover:text-[#111418] transition-colors">
-          View Details
-        </button>
-      ),
-    }),
-  ], []);
+  const columns = useMemo<ColumnDef<Customer, any>[]>(
+    () => [
+      columnHelper.accessor("username", {
+        header: "Name",
+        cell: (info) => <div className="text-[#111418]">{info.getValue()}</div>,
+      }),
+      columnHelper.accessor("email", {
+        header: "Email",
+        cell: (info) => <div className="text-[#60758a]">{info.getValue()}</div>,
+      }),
+      columnHelper.accessor("createdAt", {
+        header: "Registration Date",
+        cell: (info) => (
+          <div className="text-[#60758a]">
+            {new Date(info.getValue()).toLocaleDateString()}
+          </div>
+        ),
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: "",
+        cell: () => (
+          <button className="text-sm font-bold text-[#60758a] hover:text-[#111418] transition-colors">
+            View Details
+          </button>
+        ),
+      }),
+    ],
+    []
+  );
 
   const table = useReactTable({
     data: customers,
@@ -60,8 +68,8 @@ const { data: customers = [], isLoading } = useCustomers();
   return (
     <div className="flex min-h-screen flex-col bg-white">
       {/* Main Content */}
-      <div className="px-40 flex flex-1 justify-center py-5">
-        <div className="flex flex-col max-w-[960px] flex-1">
+      <div className="px-2 py-5 sm:px-6 lg:px-8 flex flex-1 justify-center">
+        <div className="w-full max-w-7xl">
           {/* Page Header */}
           <div className="flex flex-wrap justify-between gap-3 p-4">
             <div className="flex min-w-72 flex-col gap-3">
@@ -161,7 +169,8 @@ const { data: customers = [], isLoading } = useCustomers();
 
           {/* Table Info */}
           <div className="px-4 py-2 text-sm text-[#60758a]">
-            Showing {table.getRowModel().rows.length} of {customers.length} customers
+            Showing {table.getRowModel().rows.length} of {customers.length}{" "}
+            customers
           </div>
         </div>
       </div>
