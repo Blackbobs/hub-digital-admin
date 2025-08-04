@@ -3,7 +3,7 @@ import { useAuthStore } from "@/store/useUserStore";
 import axios from "axios";
 
 export const axiosConfig = axios.create({
-  baseURL: "http://192.168.113.86:5050/api/v1",
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true, 
 });
 
