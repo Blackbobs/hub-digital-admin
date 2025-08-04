@@ -11,14 +11,14 @@ import {
   ColumnDef,
   SortingState,
 } from '@tanstack/react-table';
-import { Search, ChevronDown, Edit } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 import Modal from '@/lib/Modal';
 import AddProductForm from './add-product-form';
 import { useProducts } from '@/services/products.service';
 import { useRouter } from 'next/navigation';
 import { Product, ProductType, StockFilter } from '@/interface/product';
 
-const columnHelper = createColumnHelper<Product>();
+// const columnHelper = createColumnHelper<Product>();
 
 export default function Products() {
   const router = useRouter();
@@ -119,7 +119,7 @@ export default function Products() {
       //   ),
       // },
     ],
-    [router]
+    []
   );
 
   const table = useReactTable({

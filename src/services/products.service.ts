@@ -1,6 +1,7 @@
 import { Product } from '@/interface/product';
 import { axiosConfig } from '@/utils/axios-config';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 
 
 interface ProductResponse {
@@ -48,8 +49,16 @@ export const createProduct = async (formData: FormData): Promise<CreateProductRe
 
     return response.data;
   } catch (error: any) {
-    console.log("❌ Error creating product:", error?.response?.data || error);
-    throw new Error(error?.response?.data?.message || "Failed to create product.");
+    if (isAxiosError(error)) {
+      console.log("❌ Error creating product:", error.response?.data || error);
+      throw new Error(error.response?.data?.message || "Failed to create product.");
+    } else if (error instanceof Error) {
+      console.log("❌ Unknown error:", error.message);
+      throw error;
+    } else {
+      console.log("❌ Unexpected error:", error);
+      throw new Error("Failed to create product.");
+    }
   }
 };
 
@@ -62,7 +71,13 @@ export const useCreateProduct = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     },
     onError: (error: any) => {
-      console.log("🛑 Mutation error:", error.message);
+      if (isAxiosError(error)) {
+        console.log("🛑 Mutation error:", error.response?.data?.message || error.message);
+      } else if (error instanceof Error) {
+        console.log("🛑 Mutation error:", error.message);
+      } else {
+        console.log("🛑 Unknown mutation error:", error);
+      }
     },
   });
 };

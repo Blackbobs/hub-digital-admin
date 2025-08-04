@@ -202,7 +202,7 @@ const NotificationsPage = () => {
               No notifications
             </h3>
             <p className="text-gray-500">
-              You're all caught up! New notifications will appear here.
+              You&apos;re all caught up! New notifications will appear here.
             </p>
           </div>
         )}

@@ -62,9 +62,12 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess }) => {
     console.log("RESPONSE RECEIVED", res); 
   reset();
   if (onSuccess) onSuccess();
-} catch (err: any) {
-  console.log("💥 Async form error:", err.message);
-  
+} catch (err: unknown) {
+  if (err instanceof Error) {
+    console.log("💥 Async form error:", err.message);
+  } else {
+    console.log("💥 Unknown async form error:", err);
+  }
 }
 };
 

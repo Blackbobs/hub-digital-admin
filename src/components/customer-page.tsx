@@ -10,7 +10,7 @@ import {
   createColumnHelper,
   type ColumnDef,
 } from "@tanstack/react-table";
-import { Search, ChevronDown, User } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import { Customer, useCustomers } from "@/services/customers.service";
 
 export default function CustomersPage() {
@@ -19,7 +19,7 @@ export default function CustomersPage() {
 
   const columnHelper = createColumnHelper<Customer>();
 
-  const columns = useMemo<ColumnDef<Customer, any>[]>(
+  const columns = useMemo(
     () => [
       columnHelper.accessor("username", {
         header: "Name",
@@ -47,7 +47,7 @@ export default function CustomersPage() {
         ),
       }),
     ],
-    []
+    [columnHelper]
   );
 
   const table = useReactTable({

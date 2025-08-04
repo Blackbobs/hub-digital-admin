@@ -1,6 +1,5 @@
 'use client'
 import { useLogin } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
 import React from 'react'
 import { useForm } from 'react-hook-form';
 
@@ -11,7 +10,6 @@ interface LoginFormData {
 }
 
 const LoginPage: React.FC = () => {
-  const router = useRouter();
   const { mutate: login, isPending, error } = useLogin();
 
   const {
@@ -40,21 +38,7 @@ const LoginPage: React.FC = () => {
                 Welcome to TyFits
               </h2>
 
-              {error && (
-                <div className="px-4 py-2 mb-4 text-red-500 text-sm">
-                  {(() => {
-                    if (
-                      typeof error === 'object' &&
-                      error !== null &&
-                      'response' in error &&
-                      (error as any).response?.data?.message
-                    ) {
-                      return (error as any).response.data.message;
-                    }
-                    return error.message || 'Login failed. Please try again.';
-                  })()}
-                </div>
-              )}
+        
 
               <div className="flex flex-wrap items-end gap-4 px-0 sm:px-4 py-3">
                 <label className="flex flex-col flex-1 w-full">

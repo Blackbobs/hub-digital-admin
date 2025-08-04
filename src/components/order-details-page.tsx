@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { OrderStatus } from '@/interface/order';
 import StatusBadge from './status-badge';
@@ -9,7 +9,7 @@ import { useOrder, useUpdateOrderStatus } from '@/hooks/useOrder';
 
 
 const OrderDetailsPage = ({ params }: { params: { id: string } }) => {
-  const router = useRouter();
+  // const router = useRouter();
   const { data: order, isLoading, isError } = useOrder(params.id);
   const { mutate: updateStatus, isPending: isUpdating } = useUpdateOrderStatus();
   const [status, setStatus] = useState(order?.status || '');
