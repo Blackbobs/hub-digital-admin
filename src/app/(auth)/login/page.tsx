@@ -10,7 +10,7 @@ interface LoginFormData {
 }
 
 const LoginPage: React.FC = () => {
-  const { mutate: login, isPending, error } = useLogin();
+  const { mutate: login, isPending } = useLogin();
 
   const {
     register,

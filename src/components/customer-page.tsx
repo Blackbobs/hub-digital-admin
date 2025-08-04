@@ -8,7 +8,6 @@ import {
   getSortedRowModel,
   flexRender,
   createColumnHelper,
-  type ColumnDef,
 } from "@tanstack/react-table";
 import { Search, ChevronDown } from "lucide-react";
 import { Customer, useCustomers } from "@/services/customers.service";

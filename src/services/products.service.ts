@@ -48,7 +48,7 @@ export const createProduct = async (formData: FormData): Promise<CreateProductRe
     );
 
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (isAxiosError(error)) {
       console.log("❌ Error creating product:", error.response?.data || error);
       throw new Error(error.response?.data?.message || "Failed to create product.");
@@ -70,7 +70,7 @@ export const useCreateProduct = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       if (isAxiosError(error)) {
         console.log("🛑 Mutation error:", error.response?.data?.message || error.message);
       } else if (error instanceof Error) {

@@ -7,7 +7,6 @@ import {
   getFilteredRowModel,
   getSortedRowModel,
   flexRender,
-  createColumnHelper,
   ColumnDef,
   SortingState,
 } from '@tanstack/react-table';
@@ -21,7 +20,6 @@ import { Product, ProductType, StockFilter } from '@/interface/product';
 // const columnHelper = createColumnHelper<Product>();
 
 export default function Products() {
-  const router = useRouter();
   const [globalFilter, setGlobalFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState<ProductType | ''>('');
   const [stockFilter, setStockFilter] = useState<StockFilter>('');
