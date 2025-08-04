@@ -61,7 +61,11 @@ export default function CustomersPage() {
   });
 
   if (isLoading) {
-    return <p className="p-10 text-center">Loading customers...</p>;
+    return (
+      <div className="min-h-screen bg-white font-sans flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
 
   return (
