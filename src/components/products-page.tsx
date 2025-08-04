@@ -14,7 +14,6 @@ import { Search, ChevronDown } from 'lucide-react';
 import Modal from '@/lib/Modal';
 import AddProductForm from './add-product-form';
 import { useProducts } from '@/services/products.service';
-import { useRouter } from 'next/navigation';
 import { Product, ProductType, StockFilter } from '@/interface/product';
 
 // const columnHelper = createColumnHelper<Product>();
