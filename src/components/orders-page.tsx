@@ -30,6 +30,7 @@ export default function OrdersDashboard() {
   const allOrders: Order[] = useMemo(() => {
     if (!ordersResponse) return [];
     // Handle both cases where response might be an array or have a data property
+    console.log(ordersResponse)
     return Array.isArray(ordersResponse) ? ordersResponse : 
            ordersResponse.data ? ordersResponse.data : [];
   }, [ordersResponse]);
