@@ -36,7 +36,7 @@ export default function Page({ params }: PageProps) {
               </Link>
               <span className="text-[#6a7681] text-base font-medium">/</span>
               <span className="text-[#121416] text-base font-medium">
-                Order #{order._id.slice(-6)}
+                Order #{order?._id?.slice(-6)}
               </span>
             </div>
 
@@ -44,7 +44,7 @@ export default function Page({ params }: PageProps) {
             <div className="flex flex-wrap justify-between gap-3 p-4">
               <div className="flex min-w-72 flex-col gap-3">
                 <p className="text-[#121416] tracking-light text-[32px] font-bold">
-                  Order #{order._id.slice(-6)}
+                  Order #{order?._id?.slice(-6)}
                 </p>
                 <p className="text-[#6a7681] text-sm">
                   Placed on {new Date(order.createdAt).toLocaleDateString()}
@@ -60,11 +60,11 @@ export default function Page({ params }: PageProps) {
             <div className="p-4 grid grid-cols-[20%_1fr] gap-x-6">
               <div className="col-span-2 grid grid-cols-subgrid border-t border-t-[#dde1e3] py-5">
                 <p className="text-[#6a7681] text-sm">Name</p>
-                <p className="text-[#121416] text-sm">{order.user.name}</p>
+                <p className="text-[#121416] text-sm">{order?.user?.username}</p>
               </div>
               <div className="col-span-2 grid grid-cols-subgrid border-t border-t-[#dde1e3] py-5">
                 <p className="text-[#6a7681] text-sm">Email</p>
-                <p className="text-[#121416] text-sm">{order.user.email}</p>
+                <p className="text-[#121416] text-sm">{order?.user?.email}</p>
               </div>
             </div>
 
@@ -82,12 +82,12 @@ export default function Page({ params }: PageProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {order.items.map((item) => (
-                      <tr key={item.product._id} className="border-t border-t-[#dde1e3]">
-                        <td className="h-[72px] px-4 py-2 w-[400px] text-sm">{item.product.title}</td>
-                        <td className="h-[72px] px-4 py-2 w-[400px] text-sm">{item.quantity}</td>
-                        <td className="h-[72px] px-4 py-2 w-[400px] text-sm">${item.price.toFixed(2)}</td>
-                        <td className="h-[72px] px-4 py-2 w-[400px] text-sm">${(item.price * item.quantity).toFixed(2)}</td>
+                    {order?.items?.map((item) => (
+                      <tr key={item?.product?._id} className="border-t border-t-[#dde1e3]">
+                        <td className="h-[72px] px-4 py-2 w-[400px] text-sm">{item?.product?.title}</td>
+                        <td className="h-[72px] px-4 py-2 w-[400px] text-sm">{item?.quantity}</td>
+                        <td className="h-[72px] px-4 py-2 w-[400px] text-sm">${item?.price?.toFixed(2)}</td>
+                        <td className="h-[72px] px-4 py-2 w-[400px] text-sm">${(item?.price * item?.quantity).toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -99,11 +99,11 @@ export default function Page({ params }: PageProps) {
             <div className="p-4">
               <div className="flex justify-between py-2">
                 <p className="text-[#6a7681] text-sm">Subtotal</p>
-                <p className="text-[#121416] text-sm">${order.totalAmount.toFixed(2)}</p>
+                <p className="text-[#121416] text-sm">${order?.totalAmount?.toFixed(2)}</p>
               </div>
               <div className="flex justify-between border-t border-t-[#dde1e3] pt-4 py-2">
                 <p className="text-[#121416] text-sm font-bold">Total</p>
-                <p className="text-[#121416] text-sm font-bold">${order.totalAmount.toFixed(2)}</p>
+                <p className="text-[#121416] text-sm font-bold">${order?.totalAmount?.toFixed(2)}</p>
               </div>
             </div>
 

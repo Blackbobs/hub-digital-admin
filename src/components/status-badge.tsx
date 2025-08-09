@@ -1,10 +1,8 @@
-// src/components/StatusBadge.tsx
 import { OrderStatus } from '@/interface/order';
 import React from 'react';
 
-
 interface StatusBadgeProps {
-  status: OrderStatus;
+  status?: OrderStatus;
 }
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
@@ -26,6 +24,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
   };
 
   const getStatusText = () => {
+    if (!status || typeof status !== 'string') return 'Unknown';
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 

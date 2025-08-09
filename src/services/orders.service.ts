@@ -2,7 +2,7 @@ import { axiosConfig } from "@/utils/axios-config";
 import { Order, OrderStatus } from "@/interface/order";
 
 export interface OrderResponse {
-  data: Order[];
+  orders: Order[];
   total: number;
 }
 
@@ -20,8 +20,9 @@ export const OrderService = {
   },
 
   getOrder: async (id: string): Promise<Order> => {
-    const response = await axiosConfig.get<Order>(`/orders/${id}`);
-    return response.data;
+    const response = await axiosConfig.get<{ message: string; order: Order }>(`/orders/${id}`);
+    console.log(response)
+    return response.data.order;
   },
 
   updateOrderStatus: async ({

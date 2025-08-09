@@ -32,7 +32,7 @@ export default function OrdersDashboard() {
     // Handle both cases where response might be an array or have a data property
     console.log(ordersResponse)
     return Array.isArray(ordersResponse) ? ordersResponse : 
-           ordersResponse.data ? ordersResponse.data : [];
+           ordersResponse.orders ? ordersResponse.orders : [];
   }, [ordersResponse]);
 
   // Client-side filtering
