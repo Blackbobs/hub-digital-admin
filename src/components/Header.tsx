@@ -22,7 +22,7 @@ const Header: React.FC = () => {
               <path d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z" fill="currentColor" />
             </svg>
           </div>
-          <h2 className="text-lg font-bold">TyFits</h2>
+          <h2 className="text-lg font-bold">TyHub</h2>
         </div>
 
         <div className="flex items-center gap-4 md:gap-8">

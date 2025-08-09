@@ -11,8 +11,10 @@ import {
 } from "@tanstack/react-table";
 import { Search, ChevronDown } from "lucide-react";
 import { Customer, useCustomers } from "@/services/customers.service";
+import { useRouter } from "next/navigation";
 
 export default function CustomersPage() {
+  const router = useRouter();
   const { data: customers = [], isLoading } = useCustomers();
   const [globalFilter, setGlobalFilter] = useState("");
 
@@ -39,8 +41,11 @@ export default function CustomersPage() {
       columnHelper.display({
         id: "actions",
         header: "",
-        cell: () => (
-          <button className="text-sm font-bold text-[#60758a] hover:text-[#111418] transition-colors">
+        cell: (info) => (
+          <button
+          onClick={() => router.push(`/customers/${info.row.original._id}`)}
+            className="text-sm font-bold text-[#60758a] hover:text-[#111418] transition-colors"
+          >
             View Details
           </button>
         ),

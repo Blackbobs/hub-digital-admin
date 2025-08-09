@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { OrderStatus } from "@/interface/order";
 import { OrderService } from "@/services/orders.service";
 
@@ -26,7 +31,7 @@ export const useOrder = (id: string) => {
 
 export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: OrderService.updateOrderStatus,
     onMutate: async (variables) => {
@@ -43,7 +48,10 @@ export const useUpdateOrderStatus = () => {
     },
     onError: (_err, variables, context) => {
       if (context?.previousOrder) {
-        queryClient.setQueryData(["order", variables.id], context.previousOrder);
+        queryClient.setQueryData(
+          ["order", variables.id],
+          context.previousOrder
+        );
       }
     },
     onSuccess: (_data, variables) => {
@@ -54,7 +62,6 @@ export const useUpdateOrderStatus = () => {
     },
   });
 };
-
 
 export const useDeleteOrder = () => {
   const queryClient = useQueryClient();

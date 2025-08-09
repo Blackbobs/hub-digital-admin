@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -9,39 +9,42 @@ import {
   flexRender,
   ColumnDef,
   SortingState,
-} from '@tanstack/react-table';
-import { Search, ChevronDown } from 'lucide-react';
-import Modal from '@/lib/Modal';
-import AddProductForm from './add-product-form';
-import { useProducts } from '@/services/products.service';
-import { Product, ProductType, StockFilter } from '@/interface/product';
+} from "@tanstack/react-table";
+import { Search, ChevronDown } from "lucide-react";
+import Modal from "@/lib/Modal";
+import AddProductForm from "./add-product-form";
+import { useProducts } from "@/services/products.service";
+import { Product, ProductType, StockFilter } from "@/interface/product";
+import EditProductForm from "./edit-product-form";
 
 // const columnHelper = createColumnHelper<Product>();
 
 export default function Products() {
-  const [globalFilter, setGlobalFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState<ProductType | ''>('');
-  const [stockFilter, setStockFilter] = useState<StockFilter>('');
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState<ProductType | "">("");
+  const [stockFilter, setStockFilter] = useState<StockFilter>("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [open, setOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const { data = [], isLoading, refetch } = useProducts();
 
   const filteredData = useMemo(() => {
     return data.filter((item: Product) => {
       // Search filter
-      const matchesSearch = item.title.toLowerCase().includes(globalFilter.toLowerCase()) || 
-                          item.description?.toLowerCase().includes(globalFilter.toLowerCase());
+      const matchesSearch =
+        item.title.toLowerCase().includes(globalFilter.toLowerCase()) ||
+        item.description?.toLowerCase().includes(globalFilter.toLowerCase());
 
       // Type filter
-      const matchesType = typeFilter === '' || item.type === typeFilter;
+      const matchesType = typeFilter === "" || item.type === typeFilter;
 
       // Stock filter
       const matchesStock =
-        stockFilter === '' ||
-        (stockFilter === 'In Stock' && item.stock && item.stock > 0) ||
-        (stockFilter === 'Low Stock' && item.stock && item.stock < 50) ||
-        (stockFilter === 'Unlimited' && item.stock === undefined);
+        stockFilter === "" ||
+        (stockFilter === "In Stock" && item.stock && item.stock > 0) ||
+        (stockFilter === "Low Stock" && item.stock && item.stock < 50) ||
+        (stockFilter === "Unlimited" && item.stock === undefined);
 
       return matchesSearch && matchesType && matchesStock;
     });
@@ -50,24 +53,35 @@ export default function Products() {
   const columns = useMemo<ColumnDef<Product>[]>(
     () => [
       {
-        accessorKey: 'title',
-        header: 'Product Name',
-        cell: (info) => (
-          <div className="font-normal text-gray-900">
-            {info.getValue<string>()}
-            {info.row.original.description && (
-              <p className="text-xs text-gray-500 mt-1 line-clamp-1">
-                {info.row.original.description}
-              </p>
-            )}
-          </div>
-        ),
+        accessorKey: "title",
+        header: "Product Name",
+        cell: (info) => {
+          const description = info.row.original.description || "";
+          const maxWords = 10;
+          const truncatedDescription =
+            description.split(" ").length > maxWords
+              ? description.split(" ").slice(0, maxWords).join(" ") + "..."
+              : description;
+
+          return (
+            <div className="font-normal text-gray-900">
+              {info.getValue<string>()}
+              {description && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {truncatedDescription}
+                </p>
+              )}
+            </div>
+          );
+        },
       },
       {
-        accessorKey: 'type',
-        header: 'Type',
+        accessorKey: "type",
+        header: "Type",
         cell: (info) => (
-          <span className="capitalize text-gray-600">{info.getValue<string>()}</span>
+          <span className="capitalize text-gray-600">
+            {info.getValue<string>()}
+          </span>
         ),
         filterFn: (row, _, value) => {
           if (!value) return true;
@@ -75,46 +89,47 @@ export default function Products() {
         },
       },
       {
-        accessorKey: 'price',
-        header: 'Price',
+        accessorKey: "price",
+        header: "Price",
         cell: (info) => (
-          <div className="text-gray-600">${info.getValue<number>().toFixed(2)}</div>
+          <div className="text-gray-600">
+            ${info.getValue<number>().toFixed(2)}
+          </div>
         ),
       },
       {
-        accessorKey: 'stock',
-        header: 'Stock',
+        accessorKey: "stock",
+        header: "Stock",
         cell: (info) => {
           const stock = info.getValue<number | undefined>();
-          let display = stock?.toString() ?? 'Unlimited';
-          let className = 'text-gray-600';
-          
+          let display = stock?.toString() ?? "Unlimited";
+          let className = "text-gray-600";
+
           if (stock !== undefined) {
             if (stock === 0) {
-              display = 'Out of Stock';
-              className = 'text-red-500';
+              display = "Out of Stock";
+              className = "text-red-500";
             } else if (stock < 50) {
               display = `${stock} (Low)`;
-              className = 'text-yellow-500';
+              className = "text-yellow-500";
             }
           }
-          
+
           return <div className={className}>{display}</div>;
         },
       },
-      // {
-      //   id: 'actions',
-      //   header: 'Actions',
-      //   cell: ({ row }) => (
-      //     <button 
-      //       onClick={() => router.push(`/products/edit/${row.original._id}`)}
-      //       className="text-gray-600 hover:text-[#663399] cursor-pointer font-bold text-sm tracking-wide transition-colors"
-      //     >
-      //       <Edit className="w-4 h-4 inline mr-1" />
-      //       Edit
-      //     </button>
-      //   ),
-      // },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+          <button
+            onClick={() => setEditingProduct(row.original)}
+            className="text-gray-600 hover:text-[#663399] cursor-pointer font-bold text-sm tracking-wide transition-colors"
+          >
+            Edit
+          </button>
+        ),
+      },
     ],
     []
   );
@@ -143,7 +158,9 @@ export default function Products() {
       <div className="px-4 py-5 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Products</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Products
+            </h1>
             <div className="flex gap-3 w-full sm:w-auto">
               <button
                 onClick={() => setOpen(true)}
@@ -158,6 +175,25 @@ export default function Products() {
             <div className="md:p-6">
               <h2 className="text-xl font-semibold mb-4">Add New Product</h2>
               <AddProductForm onSuccess={handleProductCreated} />
+            </div>
+          </Modal>
+
+          <Modal
+            isOpen={!!editingProduct}
+            onClose={() => setEditingProduct(null)}
+          >
+            <div className="md:p-6">
+              <h2 className="text-xl font-semibold mb-4">Edit Product</h2>
+              {editingProduct && (
+                <EditProductForm
+                  product={editingProduct}
+                  onSuccess={() => {
+                    setEditingProduct(null);
+                    refetch();
+                  }}
+                  onClose={() => setEditingProduct(null)}
+                />
+              )}
             </div>
           </Modal>
 
@@ -179,7 +215,9 @@ export default function Products() {
               <div className="relative min-w-[150px]">
                 <select
                   value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value as ProductType | '')}
+                  onChange={(e) =>
+                    setTypeFilter(e.target.value as ProductType | "")
+                  }
                   className="w-full pl-3 pr-8 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-[#663399] focus:border-[#663399] outline-none appearance-none"
                 >
                   <option value="">All Types</option>
@@ -192,7 +230,9 @@ export default function Products() {
               <div className="relative min-w-[150px]">
                 <select
                   value={stockFilter}
-                  onChange={(e) => setStockFilter(e.target.value as StockFilter)}
+                  onChange={(e) =>
+                    setStockFilter(e.target.value as StockFilter)
+                  }
                   className="w-full pl-3 pr-8 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-[#663399] focus:border-[#663399] outline-none appearance-none"
                 >
                   <option value="">All Stock</option>
@@ -225,8 +265,8 @@ export default function Products() {
                                 header.getContext()
                               )}
                               {{
-                                asc: ' 🔼',
-                                desc: ' 🔽',
+                                asc: " 🔼",
+                                desc: " 🔽",
                               }[header.column.getIsSorted() as string] ?? null}
                             </div>
                           </th>
@@ -237,7 +277,10 @@ export default function Products() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {isLoading ? (
                       <tr>
-                        <td colSpan={columns.length} className="px-4 py-6 text-center">
+                        <td
+                          colSpan={columns.length}
+                          className="px-4 py-6 text-center"
+                        >
                           <div className="flex justify-center">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#663399]"></div>
                           </div>
@@ -245,7 +288,10 @@ export default function Products() {
                       </tr>
                     ) : table.getRowModel().rows.length === 0 ? (
                       <tr>
-                        <td colSpan={columns.length} className="px-4 py-6 text-center text-gray-500">
+                        <td
+                          colSpan={columns.length}
+                          className="px-4 py-6 text-center text-gray-500"
+                        >
                           No products found
                         </td>
                       </tr>
@@ -256,7 +302,10 @@ export default function Products() {
                           className="hover:bg-gray-50 transition-colors"
                         >
                           {row.getVisibleCells().map((cell) => (
-                            <td key={cell.id} className="px-4 py-4 whitespace-nowrap">
+                            <td
+                              key={cell.id}
+                              className="px-4 py-4 whitespace-nowrap"
+                            >
                               {flexRender(
                                 cell.column.columnDef.cell,
                                 cell.getContext()
@@ -274,7 +323,8 @@ export default function Products() {
 
           {!isLoading && (
             <div className="px-4 py-3 text-sm text-gray-600 bg-gray-50 border-t border-gray-200 rounded-b-lg">
-              Showing {table.getRowModel().rows.length} of {data.length} products
+              Showing {table.getRowModel().rows.length} of {data.length}{" "}
+              products
             </div>
           )}
         </div>

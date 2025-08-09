@@ -11,8 +11,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "TyFits | Dashboard",
-  description: "Gym Store",
+  title: "TyHub | Dashboard",
+  description: "Admin Dashboard",
 };
 
 export default function RootLayout({

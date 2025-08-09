@@ -26,3 +26,14 @@ export const useCustomers = () => {
     queryFn: fetchCustomers,
   });
 };
+
+export const useCustomer = (id: string) => {
+  return useQuery<Customer>({
+    queryKey: ['customer', id],
+    queryFn: async () => {
+      const response = await axiosConfig.get(`/users/customer/${id}`)
+      return response.data.customer
+    },
+    enabled: !!id,
+  })
+}

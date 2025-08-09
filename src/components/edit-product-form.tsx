@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { useCreateProduct } from '@/services/products.service';
-import { ProductSize, ProductColor, ProductType } from '@/interface/product';
+import { useUpdateProduct } from '@/services/products.service';
+import { ProductSize, ProductColor, ProductType, Product } from '@/interface/product';
 
 interface ProductFormData {
   title: string;
@@ -17,13 +17,14 @@ interface ProductFormData {
   colors?: ProductColor[];
 }
 
-interface AddProductFormProps {
+interface EditProductFormProps {
+  product: Product;
   onSuccess?: () => void;
+  onClose: () => void;
 }
 
-const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess }) => {
-  const { mutateAsync: createProduct, isPending } = useCreateProduct();
-
+const EditProductForm: React.FC<EditProductFormProps> = ({ product, onSuccess, onClose }) => {
+  const { mutateAsync: updateProduct, isPending } = useUpdateProduct();
 
   const { 
     register, 
@@ -32,56 +33,57 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess }) => {
     formState: { errors }, 
     setValue,
     reset
-  } = useForm<ProductFormData>();
+  } = useForm<ProductFormData>({
+    defaultValues: {
+      title: product.title,
+      description: product.description || '',
+      type: product.type,
+      price: product.price,
+      stock: product.stock,
+      sizes: product.sizes || [],
+      colors: product.colors || []
+    }
+  });
 
   const productType = watch('type');
   const fileInput = watch('file');
   const imagesInput = watch('images');
 
   const onSubmit = async (data: ProductFormData) => {
-  const formData = new FormData();
-  formData.append('title', data.title);
-  formData.append('description', data.description || '');
-  formData.append('type', data.type);
-  formData.append('price', data.price.toString());
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('description', data.description || '');
+    formData.append('type', data.type);
+    formData.append('price', data.price.toString());
 
-  if (data.type === ProductType.physical) {
-    formData.append('stock', (data.stock || 0).toString());
+    if (data.type === ProductType.physical) {
+      formData.append('stock', (data.stock || 0).toString());
 
-    if (data.sizes && data.sizes.length > 0) {
-      data.sizes.forEach((size) => formData.append('sizes', size));
+      if (data.sizes && data.sizes.length > 0) {
+        data.sizes.forEach((size) => formData.append('sizes', size));
+      }
+      
+      if (data.colors && data.colors.length > 0) {
+        data.colors.forEach((color) => formData.append('colors', color));
+      }
+
+      if (data.images && data.images.length > 0) {
+        Array.from(data.images).forEach((file) => {
+          formData.append('images', file);
+        });
+      }
+    } else if (data.type === ProductType.digital && data.file && data.file.length > 0) {
+      formData.append('file', data.file[0]);
     }
-    
-    if (data.colors && data.colors.length > 0) {
-      data.colors.forEach((color) => formData.append('colors', color));
-    }
-    
 
-    if (data.images && data.images.length > 0) {
-      Array.from(data.images).forEach((file) => {
-        formData.append('images', file);
-      });
+    try {
+      await updateProduct({ id: product._id, formData });
+      reset();
+      if (onSuccess) onSuccess();
+    } catch (err: unknown) {
+      console.error("Error updating product:", err);
     }
-  } else if (data.type === ProductType.digital && data.file && data.file.length > 0) {
-    formData.append('file', data.file[0]);
-  }
- 
-  console.log("SUBMIT TRIGGERED", formData);
- try {
-  
-  const res = await createProduct(formData);
-    console.log("RESPONSE RECEIVED", res); 
-  reset();
-  if (onSuccess) onSuccess();
-} catch (err: unknown) {
-  if (err instanceof Error) {
-    console.log("💥 Async form error:", err.message);
-  } else {
-    console.log("💥 Unknown async form error:", err);
-  }
-}
-};
-
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -180,54 +182,43 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess }) => {
         )}
       </div>
 
-      <div>
       {productType === ProductType.physical && (
-  <>
-    {/* Sizes */}
-    <div>
-      <label className="block text-sm font-semibold mb-2">Available Sizes</label>
-      <div className="flex flex-wrap gap-3">
-        {Object.values(ProductSize).map((size) => (
-          <label key={size} className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              value={size}
-              {...register('sizes')}
-              className="form-checkbox"
-            />
-            {size}
-          </label>
-        ))}
-      </div>
-      {errors.sizes && (
-        <span className="text-red-500 text-xs">{errors.sizes.message as string}</span>
-      )}
-    </div>
+        <>
+          <div>
+            <label className="block text-sm font-semibold mb-2">Available Sizes</label>
+            <div className="flex flex-wrap gap-3">
+              {Object.values(ProductSize).map((size) => (
+                <label key={size} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    value={size}
+                    {...register('sizes')}
+                    className="form-checkbox"
+                  />
+                  {size}
+                </label>
+              ))}
+            </div>
+          </div>
 
-    {/* Colors */}
-    <div>
-      <label className="block text-sm font-semibold mb-2">Available Colors</label>
-      <div className="flex flex-wrap gap-3">
-        {Object.values(ProductColor).map((color) => (
-          <label key={color} className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              value={color}
-              {...register('colors')}
-              className="form-checkbox"
-            />
-            {color}
-          </label>
-        ))}
-      </div>
-      {errors.colors && (
-        <span className="text-red-500 text-xs">{errors.colors.message as string}</span>
+          <div>
+            <label className="block text-sm font-semibold mb-2">Available Colors</label>
+            <div className="flex flex-wrap gap-3">
+              {Object.values(ProductColor).map((color) => (
+                <label key={color} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    value={color}
+                    {...register('colors')}
+                    className="form-checkbox"
+                  />
+                  {color}
+                </label>
+              ))}
+            </div>
+          </div>
+        </>
       )}
-    </div>
-  </>
-)}
-
-      </div>
 
       <div>
         <label className="block text-sm font-semibold mb-1">
@@ -289,25 +280,28 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess }) => {
             )}
           </label>
         </div>
-        {productType === ProductType.digital && errors.file && (
-          <span className="text-red-500 text-xs">{errors.file.message}</span>
-        )}
-        {productType === ProductType.physical && errors.images && (
-          <span className="text-red-500 text-xs">{errors.images.message}</span>
-        )}
       </div>
 
-      <button 
-        type="submit" 
-        disabled={isPending}
-        className={`mt-4 px-6 py-2 bg-[#663399] font-semibold text-white rounded hover:bg-[#663399d6] w-full ${
-          isPending ? 'opacity-50 cursor-not-allowed' : ''
-        }`}
-      >
-        {isPending ? 'Saving...' : 'Save'}
-      </button>
+      <div className="flex gap-3">
+        <button 
+          type="submit" 
+          disabled={isPending}
+          className={`mt-4 px-6 py-2 bg-[#663399] font-semibold text-white rounded hover:bg-[#663399d6] flex-1 ${
+            isPending ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          {isPending ? 'Updating...' : 'Update'}
+        </button>
+        <button 
+          type="button"
+          onClick={onClose}
+          className="mt-4 px-6 py-2 bg-gray-500 font-semibold text-white rounded hover:bg-gray-600 flex-1"
+        >
+          Cancel
+        </button>
+      </div>
     </form>
   );
 };
 
-export default AddProductForm;
+export default EditProductForm;
