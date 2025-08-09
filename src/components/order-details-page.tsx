@@ -69,7 +69,7 @@ const OrderDetailsPage = ({ params }: { params: { slug: string } }) => {
                   Name
                 </p>
                 <p className="text-[#121416] text-sm font-normal leading-normal">
-                  {order.user.name}
+                  {order.user.username}
                 </p>
               </div>
               <div className="col-span-2 grid grid-cols-subgrid border-t border-t-[#dde1e3] py-5">
