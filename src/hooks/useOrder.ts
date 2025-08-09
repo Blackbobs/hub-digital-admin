@@ -39,10 +39,10 @@ export const useUpdateOrderStatus = () => {
 
       // ✅ Optimistic update
       const previousOrder = queryClient.getQueryData(["order", variables.id]);
-      queryClient.setQueryData<Order| undefined>(["order", variables.id], (old: any) => ({
-        ...old,
-        status: variables.status,
-      }));
+      queryClient.setQueryData<Order | undefined>(
+        ["order", variables.id],
+        (old) => old ? { ...old, status: variables.status } : old
+      );
 
       return { previousOrder };
     },
