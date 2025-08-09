@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react'
 import { useParams } from 'next/navigation'
-import { useCustomer } from '@/services/customers.service'
+import { Customer, useCustomer } from '@/services/customers.service'
 import {
   createColumnHelper,
   flexRender,
@@ -10,20 +10,21 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { Order } from '@/interface/order'
+import Link from 'next/link'
 
 // Breadcrumb component
 const Breadcrumb = ({ customerName }: { customerName: string }) => (
   <div className="flex flex-wrap gap-2 p-4">
-    <a href="/customers" className="text-gray-500 text-base font-medium leading-normal hover:text-gray-700">
+    <Link href="/customers" className="text-gray-500 text-base font-medium leading-normal hover:text-gray-700">
       Customers
-    </a>
+    </Link>
     <span className="text-gray-500 text-base font-medium leading-normal">/</span>
     <span className="text-gray-900 text-base font-medium leading-normal">{customerName}</span>
   </div>
 )
 
 // Contact info component
-const ContactInfo = ({ customer }: { customer: any }) => (
+const ContactInfo = ({ customer }: { customer: Customer }) => (
   <div>
     <h3 className="text-gray-900 text-lg font-bold leading-tight tracking-tight px-4 pb-2 pt-4">
       Contact Information
@@ -192,7 +193,7 @@ export default function CustomerProfile() {
             </div>
             <ContactInfo customer={customer} />
             {/* You would fetch orders for this customer here */}
-            {/* <OrdersTable orders={customer.orders || []} /> */}
+            <OrdersTable orders={[]} />
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
-import { OrderStatus } from "@/interface/order";
+import { Order, OrderStatus } from "@/interface/order";
 import { OrderService } from "@/services/orders.service";
 
 export const useOrders = (params?: {
@@ -39,7 +39,7 @@ export const useUpdateOrderStatus = () => {
 
       // ✅ Optimistic update
       const previousOrder = queryClient.getQueryData(["order", variables.id]);
-      queryClient.setQueryData(["order", variables.id], (old: any) => ({
+      queryClient.setQueryData<Order| undefined>(["order", variables.id], (old: any) => ({
         ...old,
         status: variables.status,
       }));
