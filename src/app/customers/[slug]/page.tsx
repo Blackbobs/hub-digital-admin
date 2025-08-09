@@ -57,35 +57,84 @@ const OrdersTable = ({ orders }: { orders: Order[] }) => {
   const columns = useMemo(
     () => [
       columnHelper.accessor('_id', {
-        header: 'Order ID',
+        header: 'Order Number',
         cell: info => (
-          <span className="text-gray-900 text-sm font-normal leading-normal">
-            {`ORD-${info.getValue().toString().slice(-6).toUpperCase()}`}
-          </span>
+          <Link 
+          href={`/orders/${info.getValue()}`}
+          className="text-blue-600 hover:text-blue-800 text-sm font-normal leading-normal"
+        >
+          {`ORD-${info.getValue().slice(-6).toUpperCase()}`}
+        </Link>
         ),
       }),
       columnHelper.accessor('createdAt', {
         header: 'Date',
         cell: info => (
           <span className="text-gray-500 text-sm font-normal leading-normal">
-            {new Date(info.getValue()).toLocaleDateString()}
+            {new Date(info.getValue()).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            })}
           </span>
         ),
       }),
       columnHelper.accessor('status', {
         header: 'Status',
-        cell: info => (
-          <span className="text-gray-500 text-sm font-normal leading-normal capitalize">
-            {info.getValue()}
-          </span>
-        ),
+        cell: info => {
+          const status = info.getValue()
+          let statusClass = ''
+          switch (status) {
+            case 'pending':
+              statusClass = 'bg-yellow-100 text-yellow-800'
+              break
+            case 'processing':
+              statusClass = 'bg-blue-100 text-blue-800'
+              break
+            case 'shipped':
+              statusClass = 'bg-purple-100 text-purple-800'
+              break
+            case 'delivered':
+              statusClass = 'bg-green-100 text-green-800'
+              break
+            case 'cancelled':
+              statusClass = 'bg-red-100 text-red-800'
+              break
+            default:
+              statusClass = 'bg-gray-100 text-gray-800'
+          }
+          return (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClass}`}>
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </span>
+          )
+        },
       }),
       columnHelper.accessor('totalAmount', {
         header: 'Total',
         cell: info => (
-          <span className="text-gray-500 text-sm font-normal leading-normal">
+          <span className="text-gray-900 text-sm font-medium leading-normal">
             ${info.getValue().toFixed(2)}
           </span>
+        ),
+      }),
+      columnHelper.accessor('items', {
+        header: 'Items',
+        cell: info => (
+          <span className="text-gray-500 text-sm font-normal leading-normal">
+            {info.getValue().reduce((sum, item) => sum + item.quantity, 0)} items
+          </span>
+        ),
+      }),
+      columnHelper.display({
+        id: 'actions',
+        cell: ({ row }) => (
+          <Link
+            href={`/orders/${row.original._id}`}
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium leading-normal"
+          >
+            View
+          </Link>
         ),
       }),
     ],
@@ -101,46 +150,58 @@ const OrdersTable = ({ orders }: { orders: Order[] }) => {
   return (
     <div>
       <h3 className="text-gray-900 text-lg font-bold leading-tight tracking-tight px-4 pb-2 pt-4">
-        Orders
+        Orders ({orders.length})
       </h3>
       <div className="px-4 py-3">
-        <div className="flex overflow-hidden rounded-xl border border-gray-300 bg-white">
-          <table className="flex-1">
-            <thead>
-              {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id} className="bg-white">
-                  {headerGroup.headers.map(header => (
-                    <th
-                      key={header.id}
-                      className="px-4 py-3 text-left text-gray-900 text-sm font-medium leading-normal"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map(row => (
-                <tr key={row.id} className="border-t border-t-gray-300">
-                  {row.getVisibleCells().map(cell => (
-                    <td
-                      key={cell.id}
-                      className="h-[72px] px-4 py-2 text-sm font-normal leading-normal"
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {orders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10">
+            <p className="text-gray-500 mb-4">No orders found for this customer</p>
+            <Link
+              href="/products"
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Browse products
+            </Link>
+          </div>
+        ) : (
+          <div className="flex overflow-hidden rounded-xl border border-gray-300 bg-white">
+            <table className="flex-1">
+              <thead>
+                {table.getHeaderGroups().map(headerGroup => (
+                  <tr key={headerGroup.id} className="bg-gray-50">
+                    {headerGroup.headers.map(header => (
+                      <th
+                        key={header.id}
+                        className="px-4 py-3 text-left text-gray-900 text-sm font-medium leading-normal"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map(row => (
+                  <tr key={row.id} className="border-t border-t-gray-300 hover:bg-gray-50">
+                    {row.getVisibleCells().map(cell => (
+                      <td
+                        key={cell.id}
+                        className="h-[72px] px-4 py-2 text-sm font-normal leading-normal"
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -193,7 +254,7 @@ export default function CustomerProfile() {
             </div>
             <ContactInfo customer={customer} />
             {/* You would fetch orders for this customer here */}
-            <OrdersTable orders={[]} />
+            <OrdersTable orders={customer.orders || []} />
           </div>
         </div>
       </div>

@@ -1,15 +1,17 @@
+import { Order } from '@/interface/order';
 import { axiosConfig } from '@/utils/axios-config';
 import { useQuery } from '@tanstack/react-query';
-
 export interface Customer {
   _id: string;
   username: string;
   email: string;
   address: string;
-  phone?: string;
+  profilePicture?: string;
   role: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
+  orders: Order[]; 
+  phone?: string; 
 }
 
 interface CustomerResponse {
