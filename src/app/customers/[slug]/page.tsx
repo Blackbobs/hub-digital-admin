@@ -157,7 +157,7 @@ const OrdersTable = ({ orders }: { orders: Order[] }) => {
           <div className="flex flex-col items-center justify-center py-10">
             <p className="text-gray-500 mb-4">No orders found for this customer</p>
             <Link
-              href="/products"
+              href="/"
               className="text-blue-600 hover:text-blue-800 font-medium"
             >
               Browse products
